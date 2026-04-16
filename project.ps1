@@ -22,11 +22,11 @@ $version = Read-Host @"
 Version number
 "@
 
-$arch = if(Read-Host @"
+$arch = if((Read-Host @"
 1: x64
 2: x86
 Architecture
-"@ -eq 1) {
+"@) -eq 1) {
     "x64"
 } else {
     "x86"
