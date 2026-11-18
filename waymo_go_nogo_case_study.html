@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Waymo | Từ PoC đến Go / No-go trên cao tốc (2009–2026)</title>
+<style>
+:root{--bg:#071320;--panel:#101f30;--panel2:#15293d;--outline:rgba(180,217,242,.15);--text:#f1f7fa;--sub:#a9becc;--dim:#7d97ab;--mint:#55e4ba;--teal:#19b99a;--blue:#74adff;--amber:#ffc46f;--red:#ff756a;--round:24px;--font:Inter,'Segoe UI',Arial,sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#030a11;color:var(--text);font-family:var(--font);-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer} a{color:inherit}
+#viewport{position:fixed;inset:0;overflow:hidden;display:grid;place-items:center;background:radial-gradient(ellipse at 45% 30%,#122639 0%,#02080e 80%)}
+#stage{width:1600px;height:900px;position:absolute;left:50%;top:50%;margin-left:-800px;margin-top:-450px;transform-origin:center center;overflow:hidden;box-shadow:0 25px 95px #0007;background:var(--bg)}
+.slide{width:100%;height:100%;position:absolute;inset:0;display:none;overflow:hidden;background:var(--bg);padding:63px 78px 71px;isolation:isolate}
+.slide.active{display:block;animation:slideIn .32s cubic-bezier(.2,.7,.2,1)}
+@keyframes slideIn{from{opacity:.0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.slide:before{content:"";position:absolute;left:0;top:0;width:100%;height:6px;background:linear-gradient(90deg,var(--mint),var(--blue),transparent 70%);z-index:2}
+.page-label{display:flex;align-items:center;gap:11px;color:var(--mint);font-size:17px;font-weight:800;letter-spacing:2.6px;text-transform:uppercase}
+.page-label .dot{height:8px;width:8px;border-radius:100%;background:currentColor;box-shadow:0 0 0 5px #55e4ba1c}
+h1,h2,h3,p{margin:0}h1{font-size:78px;line-height:1.05;letter-spacing:-3.7px;font-weight:850}h2{font-size:53px;line-height:1.09;letter-spacing:-2.4px;font-weight:840}h3{font-size:26px;line-height:1.2;letter-spacing:-.4px;font-weight:760}
+.lead{color:var(--sub);font-size:24px;line-height:1.5;max-width:1170px}.small{color:var(--sub);font-size:19px;line-height:1.45}.tiny{font-size:15px;line-height:1.4;color:var(--dim)}
+.accent{color:var(--mint)}.blue{color:var(--blue)}.amber{color:var(--amber)}.red{color:var(--red)}.muted{color:var(--sub)}
+.pill{font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:1.15px;padding:9px 15px;border:1px solid #55e4ba55;background:#55e4ba15;color:var(--mint);border-radius:99px;white-space:nowrap}
+.pill.warn{border-color:#ffc46f55;background:#ffc46f13;color:var(--amber)}.pill.danger{border-color:#ff756a55;background:#ff756a14;color:var(--red)}
+.panel{background:linear-gradient(140deg,#13273a 0%,#0c1929 100%);border:1px solid var(--outline);border-radius:var(--round)}
+.footer{position:absolute;bottom:31px;left:78px;right:78px;display:flex;justify-content:space-between;align-items:center;color:#7e9bb0;font-size:14px;border-top:1px solid rgba(140,188,207,.18);padding-top:17px;z-index:12}
+.footer .source{max-width:1160px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.footer strong{color:#b2cfdf}
+.slide-number{font-weight:800;letter-spacing:2px;color:var(--mint)}
+.grid{display:grid;gap:22px}.flex{display:flex;align-items:center;gap:20px}
+/* Slide 1 */
+#s1{background:radial-gradient(circle at 78% 31%,#18384b 0%,transparent 43%),linear-gradient(145deg,#071320 30%,#0b2031 100%)}
+.hero-copy{position:relative;z-index:3;width:780px;padding-top:51px}.hero-copy .eyebrow{font-size:18px;color:var(--blue);font-weight:750;letter-spacing:2.4px;margin-bottom:34px}.hero-copy .hero-intro{font-size:28px;color:#bed3df;line-height:1.45;margin-top:26px;width:720px}
+.hero-tags{display:flex;gap:12px;flex-wrap:wrap;margin-top:36px}.hero-tag{border-radius:12px;border:1px solid #ffffff30;background:#ffffff09;padding:13px 18px;color:#d8eaf1;font-size:17px;font-weight:700}
+.hero-graphic{position:absolute;width:830px;height:580px;right:-8px;top:132px;z-index:1;opacity:.98}.hero-halo{position:absolute;right:190px;top:165px;width:505px;height:505px;border-radius:50%;background:radial-gradient(circle,#37c7b11f,transparent 66%);filter:blur(8px)}
+.hero-bottom{position:absolute;bottom:93px;left:78px;right:78px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;z-index:4}
+.hero-info{padding:19px 25px;border-left:3px solid var(--mint);background:#091827b8;border-radius:0 15px 15px 0}.hero-info .label{color:#8fabbc;font-size:16px;font-weight:800;text-transform:uppercase;letter-spacing:1.2px}.hero-info .value{font-weight:800;margin-top:8px;font-size:24px;line-height:1.25}
+/* Slide 2 */
+.s2top{margin-top:18px}.s2top p{margin-top:17px}
+.ladder{height:450px;display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:32px;position:relative}
+.ladder:before{content:"";position:absolute;top:74px;left:9%;width:82%;height:4px;background:linear-gradient(90deg,#5493e2 5%,#62dcc8 80%,#72e4b3);z-index:-1}
+.milestone{border:1px solid var(--outline);border-radius:24px;padding:24px 22px 20px;background:#0e2030e8;display:flex;flex-direction:column;min-width:0;position:relative}
+.milestone .year{font-size:21px;font-weight:850;color:var(--mint);letter-spacing:.6px;margin-bottom:28px}
+.milestone .num{width:54px;height:54px;border-radius:50%;background:#0d2837;border:2px solid var(--mint);display:grid;place-items:center;font-weight:850;color:var(--mint);font-size:20px;position:absolute;top:55px;left:calc(50% - 27px)}
+.milestone .iconhold{height:142px;margin-top:34px;display:grid;place-items:center}.milestone h3{font-size:24px;line-height:1.18;margin-bottom:13px;min-height:57px}.milestone p{font-size:17px;color:var(--sub);line-height:1.43}.milestone:last-child{border-color:#40deac7a;background:linear-gradient(140deg,#123a3b,#0d2030)}
+.bottom-note{margin-top:16px;font-size:17px;color:var(--sub);padding-left:17px;border-left:3px solid var(--amber)}
+/* Slide 3 */
+.phase-row{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:38px}.phase{min-height:308px;padding:25px 27px;position:relative;overflow:hidden}.phase .big-step{font-size:76px;color:#5edab91d;font-weight:900;position:absolute;top:-15px;right:17px;letter-spacing:-5px}.phase .stamp{display:inline-block;padding:7px 10px;border-radius:8px;background:#5edab81b;color:var(--mint);font-size:16px;font-weight:760;margin-bottom:27px}.phase h3{font-size:24px;max-width:240px;min-height:84px}.phase p{color:var(--sub);font-size:19px;line-height:1.48;margin-top:17px}.phase .under{border-top:1px solid #ffffff20;margin-top:17px;padding-top:12px;font-size:15px;color:var(--blue)}
+.phase:not(:last-child):after{content:'→';position:absolute;right:-15px;top:130px;font-size:30px;color:var(--mint);z-index:3}
+.reason-row{display:grid;grid-template-columns:1.15fr .85fr;gap:20px;margin-top:26px}.reason{padding:22px 26px}.reason label{color:var(--mint);display:block;font-size:16px;text-transform:uppercase;letter-spacing:1.4px;font-weight:800;margin-bottom:9px}.reason b{font-size:24px;line-height:1.3}.reason p{font-size:18px;color:var(--sub);margin-top:10px}
+/* Slide 4 */
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:35px}.metric{padding:25px 28px;min-height:212px;position:relative}.metric .metric-label{font-size:18px;letter-spacing:.5px;color:#b7d1dc;font-weight:700}.metric .metric-number{font-size:69px;letter-spacing:-3px;font-weight:870;margin:12px 0 7px}.metric .metric-description{font-size:18px;color:var(--sub);line-height:1.38}.metric small{display:block;margin-top:10px;color:#8aabbf;font-size:15px}.metric:nth-child(3) .metric-number{color:var(--blue)}
+.decision-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:23px;margin-top:23px}.proofbox{padding:26px 30px;min-height:222px}.proofbox h3{font-size:22px;margin-bottom:18px}.proofbox ul{list-style:none;margin:0;padding:0;display:grid;gap:12px}.proofbox li{display:flex;align-items:flex-start;gap:12px;font-size:18px;line-height:1.35;color:#c2d7e1}.proofbox li:before{content:'✓';color:var(--mint);font-weight:900}.proofbox.unknown li:before{content:'?';color:var(--amber)}
+.go-band{position:absolute;bottom:84px;right:78px;color:#122b25;background:var(--mint);font-weight:900;letter-spacing:2px;font-size:16px;padding:13px 20px;border-radius:14px;transform:rotate(-2deg);box-shadow:0 8px 29px #15d2ad3a}
+/* Slide 5 */
+.incident-top{display:flex;align-items:end;justify-content:space-between;margin-top:15px}.incident-top .big-counter{font-size:76px;color:var(--red);font-weight:900;letter-spacing:-3px}.incident-top .big-counter span{font-size:22px;color:var(--sub);letter-spacing:0;display:block;margin-top:2px;font-weight:600}
+.incident-layout{display:grid;grid-template-columns:1.32fr .68fr;gap:25px;margin-top:16px;height:390px}.road-card{background:#102337;border:1px solid var(--outline);border-radius:25px;padding:13px;overflow:hidden;position:relative}.road-head{position:absolute;top:18px;left:25px;z-index:3;background:#071827e7;padding:10px 13px;border-radius:8px;font-size:15px;color:#d8ebf5;font-weight:750}
+.road-legend{position:absolute;bottom:19px;left:25px;display:flex;gap:20px;font-size:16px;z-index:2;background:#0a1b2cd9;border-radius:12px;padding:12px 15px}.road-legend span{display:flex;align-items:center;gap:8px}.legend-line{width:27px;height:0;border-top:4px solid var(--mint)}.legend-line.redline{border-top-color:var(--red);border-top-style:dashed}
+.incident-cards{display:grid;grid-template-rows:1fr 1fr;gap:17px}.incident-block{padding:23px 26px}.incident-block .badge{font-size:16px;font-weight:820;color:var(--red);margin-bottom:13px;letter-spacing:.6px}.incident-block h3{font-size:24px;margin-bottom:11px}.incident-block p{font-size:19px;color:var(--sub);line-height:1.45}
+.root-cause{display:flex;gap:20px;margin-top:21px}.root-cause .root{flex:1;min-height:86px;background:#3826257a;border:1px solid #ff756a4e;padding:17px 21px;border-radius:16px}.root-cause .root strong{display:block;color:#ffbbb2;font-size:16px;margin-bottom:6px}.root-cause .root span{font-size:18px;line-height:1.3}
+/* Slide 6 */
+.decision-title{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:22px}.decision-title h2{max-width:1050px}.decision-rail{height:554px;display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:20px;margin-top:35px}.decision{padding:27px 27px 20px;position:relative;overflow:hidden}.decision:before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--blue)}.decision.pause:before{background:var(--amber)}.decision.no:before{background:var(--red)}.decision.go:before{background:var(--mint)}
+.decision .date{font-size:17px;color:var(--sub);font-weight:740;letter-spacing:.7px;margin-bottom:13px}.decision h3{font-size:28px;margin-bottom:12px}.decision p{font-size:18px;color:#c2d5df;line-height:1.43}.decision .status{position:absolute;right:20px;top:20px;font-size:13px;font-weight:900;letter-spacing:1.2px;padding:7px 10px;border-radius:9px;background:#fff1;color:#fff}.decision.pause .status{background:#ffc46f1e;color:var(--amber)}.decision.go .status{background:#55e4ba20;color:var(--mint)}.decision.no .status{background:#ff756a26;color:var(--red)}
+.decision.emphasis{background:linear-gradient(142deg,#3b292b,#191b2e);border-color:#ff756a61}
+.decision .callout{margin-top:14px;font-size:16px;color:#94b3c5;border-top:1px solid #ffffff21;padding-top:12px}
+/* Slide 7 */
+.conclusion{margin-top:30px;display:grid;grid-template-columns:1fr 1fr;gap:22px}.evidence{padding:27px 29px;min-height:332px}.evidence h3{margin-bottom:17px}.evidence ul{list-style:none;margin:0;padding:0;display:grid;gap:16px}.evidence li{display:flex;gap:13px;font-size:19px;line-height:1.38;color:#c5dce7}.evidence .bullet{width:24px;height:24px;flex:0 0 24px;border-radius:50%;display:grid;place-items:center;font-weight:850;background:#55e4ba20;color:var(--mint);font-size:16px}.evidence.hyp .bullet{color:var(--amber);background:#ffc46f20}
+.final-quote{margin-top:24px;padding:24px 34px;border-radius:20px;background:linear-gradient(97deg,#1d564d,#18354e);border:1px solid #68e6c157;font-size:28px;font-weight:790;line-height:1.25;letter-spacing:-.35px}
+.scope-note{display:flex;justify-content:space-between;align-items:center;margin-top:19px;font-size:18px;color:var(--sub)}.scope-note b{color:var(--mint)}
+/* Controls */
+#controls{position:fixed;bottom:24px;right:24px;display:flex;gap:10px;align-items:center;z-index:90;opacity:0;pointer-events:none;transition:opacity .2s}#controls.visible{opacity:.96;pointer-events:auto}
+#controls button{border:1px solid #6d92a45c;background:#102131e8;color:#c9dde6;min-width:42px;height:42px;border-radius:10px;font-size:18px;font-weight:800;box-shadow:0 6px 20px #0004}
+#controls button:hover{background:#204157;color:white}
+#controls .ctrl-label{font-size:13px;color:#90aab9;margin-right:9px}
+#progress{position:fixed;bottom:0;left:0;width:100%;height:4px;background:#223c4a;z-index:100}#progress b{display:block;background:linear-gradient(90deg,#5ce2b8,#74adff);height:100%;width:14.28%;transition:width .25s}
+#modal-back{display:none;position:fixed;inset:0;background:#000b;z-index:95;align-items:center;justify-content:center;padding:30px}
+#modal-back.show{display:flex}
+#modal{position:relative;max-height:87vh;width:min(1000px,95vw);overflow:auto;background:#102236;border:1px solid #94c0dc60;box-shadow:0 35px 130px #000b;border-radius:22px;padding:35px 40px;color:#e6f4fa}
+#modal h2{font-size:29px;letter-spacing:-1px;margin-bottom:18px}#modal p,#modal li{font-size:17px;line-height:1.55;color:#c3d6e0}#modal li{margin-bottom:10px}#modal a{color:#79dccc;overflow-wrap:anywhere}
+#close-modal{position:absolute;right:21px;top:18px;background:#284254;border:0;color:#fff;font-weight:800;border-radius:9px;padding:7px 12px}
+#notes{white-space:pre-line}
+@media print{html,body{height:auto;overflow:visible;background:#fff}#viewport{position:static;display:block;overflow:visible;background:#fff}#stage{position:static;left:auto;top:auto;margin:0;width:1600px;height:auto;box-shadow:none;transform:none!important;overflow:visible} .slide{display:block!important;position:relative!important;page-break-after:always;break-after:page;animation:none!important}#controls,#progress,#modal-back{display:none!important}@page{size:16in 9in;margin:0}}
+@media (prefers-reduced-motion:reduce){.slide.active{animation:none}}
+</style>
+</head>
+<body>
+<div id="viewport"><main id="stage" aria-label="Bộ slide nghiên cứu Waymo Go / No-go">
+
+<!-- SLIDE 1 -->
+<section class="slide active" id="s1" data-notes="Mở đầu bằng câu hỏi: Một hệ thống đã chạy hơn 100 triệu dặm không người lái và hàng triệu dặm cao tốc có thể vẫn chưa sẵn sàng cho mọi tình huống? Đây là câu chuyện về giới hạn của bằng chứng an toàn khi thay đổi phạm vi hoạt động. Waymo thuộc Alphabet, bắt đầu từ Google Self-Driving Car Project năm 2009. Không nhầm tạm dừng freeway với đóng cửa toàn bộ Waymo.">
+  <div class="page-label"><span class="dot"></span>Case study · Go / No-go</div>
+  <div class="hero-copy">
+    <div class="eyebrow">WAYMO · 2009—2026</div>
+    <h1>Từ <span class="accent">GO</span> đến<br><span class="red">NO-GO</span><br>trên cao tốc.</h1>
+    <p class="hero-intro">Khi kết quả thử nghiệm tích cực vẫn chưa đủ để chứng minh an toàn trước những tình huống giao thông hiếm gặp.</p>
+    <div class="hero-tags"><span class="hero-tag">Autonomous driving</span><span class="hero-tag">Safety testing</span><span class="hero-tag">Decision gates</span></div>
+  </div>
+  <div class="hero-halo"></div>
+  <svg class="hero-graphic" viewBox="0 0 830 580" aria-label="Minh họa vector xe tự lái trên cao tốc" role="img">
+    <defs><linearGradient id="roadG" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#1f3a50"/><stop offset="1" stop-color="#0c1624"/></linearGradient><linearGradient id="vehG" x1="0" x2="1"><stop stop-color="#f7fdff"/><stop offset="1" stop-color="#a8ccd8"/></linearGradient><linearGradient id="glassG" x1="0" x2="0" y1="0" y2="1"><stop stop-color="#507c92"/><stop offset="1" stop-color="#1b3b50"/></linearGradient></defs>
+    <path d="M 100 580 L 380 165 L 755 165 L 830 580Z" fill="url(#roadG)" stroke="#568097" stroke-width="2"/>
+    <path d="M 356 580 L 475 165" stroke="#9fb0b2" stroke-width="4" stroke-dasharray="38 36" opacity=".75"/>
+    <path d="M 568 580 L 568 165" stroke="#c5d3cc" stroke-width="4" stroke-dasharray="38 36" opacity=".65"/>
+    <path d="M 785 580 L 660 165" stroke="#9fb0b2" stroke-width="4" opacity=".65"/>
+    <path d="M 255 580 L 419 165" stroke="#9fb0b2" stroke-width="4" opacity=".6"/>
+    <path d="M 100 580 L 380 165 M 830 580 L 755 165" stroke="#55e4ba" stroke-width="5" opacity=".3"/>
+    <ellipse cx="567" cy="415" rx="200" ry="68" fill="#000" opacity=".32"/>
+    <g transform="translate(340,196)">
+      <path d="M 91 135 Q105 65 156 43 L 303 43 Q343 65 363 135 L 384 192 Q390 248 351 270 L 101 270 Q62 250 69 192Z" fill="url(#vehG)" stroke="#d6f6fa" stroke-width="4"/>
+      <path d="M 156 56 L 297 56 Q319 71 341 137 L 113 137 Q127 71 156 56Z" fill="url(#glassG)"/>
+      <path d="M 130 56 Q140 26 175 22 L 277 22 Q302 26 313 56" fill="#e0f1f6"/>
+      <path d="M 166 18 L 172 -3 L 280 -3 L 289 18Z" fill="#0b283b" stroke="#79d5d4" stroke-width="2"/>
+      <ellipse cx="226" cy="-6" rx="24" ry="12" fill="#14465b" stroke="#75e4ca" stroke-width="3"/>
+      <rect x="90" y="158" width="280" height="65" rx="24" fill="#dbeef3"/>
+      <rect x="99" y="170" width="55" height="20" rx="8" fill="#96edec"/><rect x="315" y="170" width="55" height="20" rx="8" fill="#96edec"/>
+      <rect x="184" y="199" width="89" height="23" rx="8" fill="#1c394b"/>
+      <text x="230" y="215" text-anchor="middle" font-family="Arial" font-size="12" letter-spacing="4" font-weight="900" fill="#daf7f8">WAYMO</text>
+      <path d="M 120 260 L 121 286 L 162 286 L 169 262 M 301 260 L 309 286 L 348 286 L 350 260" fill="#111c2a"/>
+    </g>
+    <circle cx="565" cy="195" r="115" fill="none" stroke="#55e4ba" stroke-width="2" stroke-dasharray="13 10" opacity=".31"/>
+    <circle cx="565" cy="195" r="155" fill="none" stroke="#55e4ba" stroke-width="2" stroke-dasharray="5 14" opacity=".18"/>
+    <text x="583" y="50" font-size="15" font-family="Arial" letter-spacing="4" fill="#a7efe1" opacity=".75">WAYMO DRIVER</text>
+  </svg>
+  <div class="hero-bottom">
+    <div class="hero-info"><div class="label">Xuất phát</div><div class="value">Google Self-Driving Car · 2009</div></div>
+    <div class="hero-info"><div class="label">Sản phẩm</div><div class="value">Waymo Driver &amp; Waymo One</div></div>
+    <div class="hero-info"><div class="label">Phạm vi case</div><div class="value">Dịch vụ không tài xế trên cao tốc</div></div>
+  </div>
+  <div class="footer"><span class="source">Nguồn: Waymo About [S1], Waymo 2025 freeway launch [S5]</span><span class="slide-number">01 / 07</span></div>
+</section>
+
+<!-- SLIDE 2 -->
+<section class="slide" id="s2" data-notes="Cần nói rõ đây là sự trưởng thành của kiểm thử, KHÔNG phải bắt đầu trong khu khép kín rồi mới ra đường thật. Từ năm 2009 Google đã thử xe tự lái trên đường công cộng. Castle, mô phỏng và chạy đường thật được thực hiện song song và liên tục. Milestone 2009–2010: 10 cung đường, mỗi cung dài 100 dặm mà không cần người can thiệp. Firefly 2015 tại Austin không có điều khiển truyền thống hay tài xế dự phòng. 2020 dịch vụ công cộng không tài xế Phoenix. 2024 freeway rider-only với nhân viên.">
+  <div class="page-label"><span class="dot"></span>01 / Hành trình kiểm chứng</div>
+  <div class="s2top"><h2>Từ nguyên mẫu nghiên cứu đến<br><span class="accent">robotaxi trên đường thật</span></h2><p class="lead">15 năm phát triển qua nhiều vòng kiểm thử: đường công cộng, đường thử kín, mô phỏng và vận hành thương mại.</p></div>
+  <div class="ladder">
+    <article class="milestone"><div class="year">2009–2010</div><div class="num">01</div><div class="iconhold"><svg width="130" height="100" viewBox="0 0 130 100"><path d="M7 87 L43 14 L94 14 L124 87" stroke="#5d90af" stroke-width="4" fill="none"/><path d="M65 86 V18" stroke="#ecf5e8" stroke-width="3" stroke-dasharray="11 8"/><path d="M37 75 l9 -21 h36 l12 21 z" fill="#bce2ef" stroke="#84b9d0" stroke-width="2"/><rect x="48" y="55" width="34" height="11" rx="5" fill="#214a5d"/></svg></div><h3>PoC trên đường công cộng</h3><p>Hoàn thành <b>10 tuyến × 100 dặm</b> tự lái không cần can thiệp.</p></article>
+    <article class="milestone"><div class="year">2014–2015</div><div class="num">02</div><div class="iconhold"><svg width="143" height="100" viewBox="0 0 143 100"><rect x="9" y="59" width="125" height="21" rx="10" fill="#b7e4eb"/><path d="M28 59 Q29 28 57 24 L84 24 Q111 29 115 59Z" fill="#e8f5f5"/><rect x="42" y="36" width="63" height="21" rx="11" fill="#4c8098"/><circle cx="39" cy="81" r="12" fill="#0e2030" stroke="#58a3b8" stroke-width="3"/><circle cx="107" cy="81" r="12" fill="#0e2030" stroke="#58a3b8" stroke-width="3"/><rect x="60" y="13" width="23" height="12" rx="5" fill="#11606a"/></svg></div><h3>Firefly &amp; đường thử Castle</h3><p>Kiểm thử có cấu trúc; chuyến <b>không tài xế dự phòng</b> tại Austin năm 2015.</p></article>
+    <article class="milestone"><div class="year">2017–2020</div><div class="num">03</div><div class="iconhold"><svg width="131" height="100" viewBox="0 0 131 100"><rect x="10" y="28" width="110" height="59" rx="17" fill="#e9f9fa"/><path d="M29 28 L48 13 H89 L105 28" stroke="#9ed4de" stroke-width="8" fill="none"/><rect x="28" y="36" width="74" height="22" rx="8" fill="#2d5269"/><circle cx="35" cy="86" r="12" fill="#102638" stroke="#77b9ca" stroke-width="2"/><circle cx="99" cy="86" r="12" fill="#102638" stroke="#77b9ca" stroke-width="2"/><path d="M58 15 L63 6 H77 L84 15" fill="#1c7780"/></svg></div><h3>Go đô thị có giới hạn</h3><p>Waymo One ra mắt <b>2018</b>; phục vụ công chúng không tài xế tại Phoenix <b>2020</b>.</p></article>
+    <article class="milestone"><div class="year">01/2024</div><div class="num">04</div><div class="iconhold"><svg width="142" height="100" viewBox="0 0 142 100"><path d="M0 82 H142 M0 61 H142 M0 40 H142" stroke="#6e91ac" stroke-width="5"/><path d="M18 82 L82 40 M47 82 L110 40" stroke="#eef4ee" stroke-width="3" stroke-dasharray="13 9"/><rect x="46" y="44" width="57" height="26" rx="10" fill="#e9f4f5" stroke="#74c7d0" stroke-width="2"/><rect x="69" y="39" width="13" height="8" rx="3" fill="#29bca5"/></svg></div><h3>Thử không tài xế trên cao tốc</h3><p>Ưu tiên chuyến <b>rider-only cho nhân viên Waymo</b> tại Phoenix.</p></article>
+    <article class="milestone"><div class="year">11/2025</div><div class="num">05</div><div class="iconhold"><svg width="140" height="100" viewBox="0 0 140 100"><rect x="14" y="27" width="112" height="57" rx="12" fill="#123a38" stroke="#4ce3b0" stroke-width="3"/><path d="M34 53 l16 16 45 -39" stroke="#63e5b7" stroke-width="8" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg></div><h3>GO cao tốc có khách</h3><p>Mở freeway cho hành khách tại <b>Phoenix, LA và Bay Area</b>.</p></article>
+  </div>
+  <p class="bottom-note">Lưu ý: thử nghiệm kín, mô phỏng và chạy trên đường công cộng <b>diễn ra song song</b>; không phải các nấc được hoàn tất một lần rồi bỏ qua.</p>
+  <div class="footer"><span class="source">Nguồn: Waymo 1,000-mile challenge [S2]; Firefly [S3]; Castle [S4]; freeway 2024 [S6]; launch 2025 [S5]</span><span class="slide-number">02 / 07</span></div>
+</section>
+
+<!-- SLIDE 3 -->
+<section class="slide" id="s3" data-notes="Năm 2024 Waymo công bố kế hoạch kiểm thử rider-only trên cao tốc ở Phoenix, ban đầu chở nhân viên Waymo. Trước đó đã tích lũy hàng triệu dặm trên cao tốc với chuyên viên an toàn trên xe ở ô tô và xe tải. Công ty nói dùng structured testing, simulation và public road operation. 50% nhanh hơn chỉ là một ví dụ tuyến sân bay Phoenix đến bắc Scottsdale, không phải mức cải thiện trung bình toàn hệ thống. Tháng 11/2025 bắt đầu mời công chúng sử dụng theo từng đợt.">
+  <div class="page-label"><span class="dot"></span>02 / Nấc thang triển khai freeway</div>
+  <h2>Waymo không mở cao tốc một lần.<br><span class="accent">Họ nâng mức rủi ro từng bước.</span></h2>
+  <p class="lead" style="margin-top:17px">Mỗi nấc là một quyết định tăng phạm vi vận hành (ODD), với cấp độ giám sát và đối tượng hành khách khác nhau.</p>
+  <div class="phase-row">
+    <article class="panel phase"><div class="big-step">1</div><span class="stamp">Trước 2024</span><h3>Cao tốc có chuyên viên an toàn</h3><p>Thử nghiệm ô tô và xe tải, có người sẵn sàng can thiệp.</p><div class="under">Đánh giá hành vi ở tốc độ cao</div></article>
+    <article class="panel phase"><div class="big-step">2</div><span class="stamp">01/2024</span><h3>Rider-only cho nhân viên</h3><p>Bỏ tài xế dự phòng, nhưng giới hạn người đi thử là nhân viên Waymo ở Phoenix.</p><div class="under">Lấy phản hồi trước khi mở công chúng</div></article>
+    <article class="panel phase"><div class="big-step">3</div><span class="stamp">2024–2025</span><h3>Mở rộng vận hành &amp; xác nhận</h3><p>Kiểm thử có cấu trúc, mô phỏng, thực địa và phối hợp với lực lượng an toàn.</p><div class="under">Tích lũy bằng chứng + chuẩn bị vận hành</div></article>
+    <article class="panel phase" style="border-color:#4cddb068;background:linear-gradient(140deg,#123c3b,#102436)"><div class="big-step">4</div><span class="stamp">12/11/2025</span><h3>Mở dịch vụ cho hành khách</h3><p>Freeway chính thức xuất hiện trong các chuyến Waymo One ở ba khu vực.</p><div class="under" style="color:var(--mint)">GO thương mại có giới hạn</div></article>
+  </div>
+  <div class="reason-row">
+    <div class="panel reason"><label>Logic kỹ thuật</label><b>Không tăng phạm vi hoạt động chỉ từ một bài demo.</b><p>Waymo nói họ kết hợp chạy thực, kiểm thử có cấu trúc và mô phỏng trước mỗi bước mở rộng.</p></div>
+    <div class="panel reason"><label>Logic sản phẩm</label><b>Freeway tạo giá trị người dùng có thể đo.</b><p>Tuyến sân bay Phoenix → bắc Scottsdale có thể nhanh hơn khoảng 50% so với chỉ đi phố (ví dụ Waymo công bố).</p></div>
+  </div>
+  <div class="footer"><span class="source">Nguồn: Waymo — From surface streets to freeways (08/01/2024) [S6]; Taking riders further (12/11/2025) [S5]</span><span class="slide-number">03 / 07</span></div>
+</section>
+
+<!-- SLIDE 4 -->
+<section class="slide" id="s4" data-notes="Trình bày 3 chỉ số như bằng chứng niềm tin, không coi là ba tiêu chí chính thức trong biên bản board. 100 triệu dặm không tài xế trên đường công cộng trước tháng 7/2025: không phải 100 triệu dặm chỉ trên cao tốc. 'Millions of freeway miles': Waymo xác nhận, không công bố breakdown cụ thể trong thông báo khai trương 2025. 50% là lợi ích một ví dụ tuyến, không phải chỉ số an toàn. Không có ngưỡng chính thức 'đủ an toàn để Go' cho công trường freeway được công bố.">
+  <div class="page-label"><span class="dot"></span>03 / Bằng chứng trước quyết định Go</div>
+  <h2>Những con số đủ mạnh<br>để tạo <span class="accent">niềm tin triển khai</span></h2>
+  <p class="lead" style="margin-top:13px">Nhưng ba con số dưới đây không đo cùng một điều — và không phải các ngưỡng phê duyệt nội bộ được công bố.</p>
+  <div class="metrics">
+    <div class="panel metric"><div class="metric-label">Năng lực vận hành toàn hệ thống</div><div class="metric-number accent">100M+</div><div class="metric-description">Dặm không tài xế trên <b>đường công cộng</b>, mốc tháng 7/2025.</div><small>Không phải số dặm riêng cao tốc.</small></div>
+    <div class="panel metric"><div class="metric-label">Kinh nghiệm đặc thù cao tốc</div><div class="metric-number accent" style="font-size:60px">Hàng triệu</div><div class="metric-description">Dặm đã được Waymo ghi nhận trên <b>freeway</b> trước 11/2025.</div><small>Thông báo không tách toàn bộ theo loại hình giám sát.</small></div>
+    <div class="panel metric"><div class="metric-label">Lợi ích cho người dùng</div><div class="metric-number">~50%</div><div class="metric-description">Rút ngắn thời gian ở <b>một tuyến mẫu</b> Phoenix khi sử dụng cao tốc.</div><small>Chỉ là ví dụ tuyến đường, không phải hiệu suất trung bình.</small></div>
+  </div>
+  <div class="decision-grid">
+    <div class="panel proofbox"><h3 class="accent">Điều Waymo đã có bằng chứng</h3><ul><li>Hệ thống chạy không tài xế ở quy mô lớn trong phạm vi đã triển khai</li><li>Có kinh nghiệm freeway và tăng dần mức độ kiểm thử</li><li>Có giá trị rõ ràng: tuyến đi nhanh hơn, kết nối vùng rộng hơn</li></ul></div>
+    <div class="panel proofbox unknown"><h3 class="amber">Điều chưa thấy trong công bố công khai</h3><ul><li>Ngưỡng pass/fail riêng cho mọi loại công trường freeway</li><li>Độ bao phủ tất cả tổ hợp đóng làn + nguy cơ đồng thời</li><li>Biên bản tiêu chí phê duyệt chi tiết của ban lãnh đạo</li></ul></div>
+  </div>
+  <div class="go-band">GO · 12 NOV 2025</div>
+  <div class="footer"><span class="source">Nguồn: Waymo 100M miles (15/07/2025) [S7]; freeway launch [S5]; freeway testing [S6]</span><span class="slide-number">04 / 07</span></div>
+</section>
+
+<!-- SLIDE 5 -->
+<section class="slide" id="s5" data-notes="Bây giờ là sự cố mới trong hoạt động đã được Go. Báo cáo NHTSA 26E035: Phoenix 11/4 một lần và 19/4 năm lần, không nhận diện biển đóng lối lên cao tốc; Bay Area 18/5 bảy xe đi giữa cọc tiêu đánh dấu làn đóng. NHTSA ghi nguyên nhân hai dạng: không nhận diện công trường và/hoặc ưu tiên tránh rủi ro cao tốc khác một cách không phù hợp. Sơ đồ vector là minh họa, không tái dựng hiện trường thực tế; nói rõ điều đó.">
+  <div class="page-label"><span class="dot"></span>04 / Sự cố thực tế</div>
+  <div class="incident-top"><div><h2>Điểm mù xuất hiện ở<br><span class="red">công trường cao tốc</span></h2><p class="lead" style="margin-top:12px;max-width:900px">Hệ thống xử lý chưa đúng biển đóng lối vào, cọc tiêu đóng làn và các nguy cơ cùng xuất hiện.</p></div><div class="big-counter">13<span>sự kiện được nêu trong hồ sơ triệu hồi</span></div></div>
+  <div class="incident-layout">
+    <div class="road-card">
+      <div class="road-head">Sơ đồ minh họa tình huống · không phải tái dựng hiện trường</div>
+      <svg viewBox="0 0 875 470" width="100%" height="100%" role="img" aria-label="Minh họa xe Waymo có nguy cơ vượt qua rào cọc tiêu đóng làn cao tốc">
+        <defs><linearGradient id="road5" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#253b4e"/><stop offset="1" stop-color="#152b3d"/></linearGradient></defs>
+        <rect width="875" height="470" fill="#0b2032"/>
+        <path d="M 0 93 L 875 93 L 875 425 L 0 425Z" fill="url(#road5)" stroke="#66849b" stroke-width="3"/>
+        <path d="M0 204H875 M0 315H875" stroke="#deeadb" stroke-width="4" stroke-dasharray="40 35" opacity=".75"/>
+        <path d="M0 93H875 M0 425H875" stroke="#a9c4c8" stroke-width="5"/>
+        <rect x="445" y="102" width="409" height="95" fill="#ff7b5930" stroke="#ff826b" stroke-width="2" stroke-dasharray="9 8"/>
+        <rect x="445" y="103" width="410" height="94" fill="url(#stripes)" opacity=".4"/>
+        <text x="656" y="145" fill="#ffb4a5" font-family="Arial" font-weight="800" font-size="22" text-anchor="middle">LÀN ĐANG THI CÔNG</text>
+        <text x="656" y="172" fill="#ffac96" font-family="Arial" font-size="15" text-anchor="middle">Không được đi vào</text>
+        <g fill="#ffac65" stroke="#fff0cf" stroke-width="2"><path d="M453 183 l14 -26 14 26z"/><path d="M500 183 l14 -26 14 26z"/><path d="M547 183 l14 -26 14 26z"/><path d="M594 183 l14 -26 14 26z"/><path d="M641 183 l14 -26 14 26z"/><path d="M688 183 l14 -26 14 26z"/><path d="M735 183 l14 -26 14 26z"/><path d="M782 183 l14 -26 14 26z"/></g>
+        <path d="M180 240 Q340 247 448 256 Q566 266 748 264" fill="none" stroke="#5ae4b8" stroke-width="7" stroke-linecap="round"/><path d="M728 253 l26 11 -26 10" fill="none" stroke="#5ae4b8" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M180 240 Q327 218 442 192 Q548 151 673 151" fill="none" stroke="#ff756a" stroke-width="7" stroke-dasharray="14 12" stroke-linecap="round"/><path d="M649 137 l29 14 -29 12" fill="none" stroke="#ff756a" stroke-width="6" stroke-linecap="round"/>
+        <g transform="translate(138,224)"><rect x="0" y="0" width="113" height="48" rx="18" fill="#edf8f9" stroke="#91cbd3" stroke-width="4"/><rect x="24" y="6" width="62" height="34" rx="12" fill="#40677a"/><rect x="45" y="-8" width="21" height="13" rx="5" fill="#2ed4b7"/><text x="55" y="66" font-family="Arial" font-size="19" font-weight="800" fill="#edf8f9" text-anchor="middle">WAYMO</text></g>
+        <g transform="translate(452,66)"><rect width="96" height="33" rx="7" fill="#dc7c52" stroke="#ffd3a6" stroke-width="2"/><text x="48" y="22" font-family="Arial" font-size="15" font-weight="800" fill="white" text-anchor="middle">CLOSED</text></g>
+      </svg>
+      <div class="road-legend"><span><i class="legend-line"></i>Luồng hợp lệ (minh họa)</span><span><i class="legend-line redline"></i>Luồng gây rủi ro (minh họa)</span></div>
+    </div>
+    <div class="incident-cards">
+      <div class="panel incident-block"><div class="badge">PHOENIX · 11 &amp; 19/04/2026</div><h3>06 sự kiện</h3><p>Xe không nhận ra biển đóng lối lên freeway, tiếp tục đi vào vùng thi công đã được hoạch định.</p></div>
+      <div class="panel incident-block"><div class="badge">BAY AREA · 18/05/2026</div><h3>07 sự kiện</h3><p>Xe đi qua khoảng trống giữa các cọc tiêu đang đánh dấu làn đóng trong khu vực thi công.</p></div>
+    </div>
+  </div>
+  <div class="root-cause"><div class="root"><strong>NGUYÊN NHÂN 1 · NHẬN DIỆN</strong><span>Không nhận diện chính xác vùng thi công hoặc tín hiệu đóng đường.</span></div><div class="root"><strong>NGUYÊN NHÂN 2 · ƯU TIÊN RỦI RO</strong><span>Ưu tiên tránh một nguy cơ cao tốc khác, dẫn tới đi vào vùng nguy hiểm.</span></div></div>
+  <div class="footer"><span class="source">Nguồn: NHTSA Part 573 Safety Recall Report 26E035, trang 1 &amp; 3 (17/06/2026) [S8]</span><span class="slide-number">05 / 07</span></div>
+</section>
+
+<!-- SLIDE 6 -->
+<section class="slide" id="s6" data-notes="Cần phân biệt hội đồng Waymo và cơ quan quản lý. 20/4 Field Safety Committee xem 6 sự kiện, đưa hạn chế freeway. 19/5 sau 7 sự kiện Bay Area tiếp tục hạn chế đến khi có root cause. 1/6 Safety Board yêu cầu thêm dữ liệu, 8/6 quyết định recall, công bố 17/6 NHTSA với 3871 bộ ADS. Cuối tháng 7 khôi phục freeway. 5/11 ba xe vào công trường US101, 6/11 sự kiện liên quan CHP trên I-280. DMV restriction hiệu lực 11/11. Ngày 17/11 Waymo ngừng freeway thương mại không tài xế ở tất cả thị trường, không đóng city streets; freeway thử với chuyên viên tiếp tục.">
+  <div class="page-label"><span class="dot"></span>05 / Chuỗi Go — No-go</div>
+  <div class="decision-title"><h2>Sửa lỗi, mở lại...<br><span class="red">rồi phải dừng lần nữa.</span></h2><span class="pill danger">2026 · Safety decisions</span></div>
+  <div class="decision-rail">
+    <article class="panel decision pause"><div class="status">RESTRICT</div><div class="date">20/04/2026</div><h3>Hạn chế freeway</h3><p>Field Safety Committee họp sau 6 sự kiện Phoenix, áp dụng hạn chế vận hành cho tới khi có biện pháp giảm thiểu.</p><div class="callout">Quyết định nội bộ Waymo</div></article>
+    <article class="panel decision pause"><div class="status">RESTRICT</div><div class="date">19/05/2026</div><h3>Hạn chế tiếp tục</h3><p>Sau 7 sự kiện ở Bay Area, yêu cầu làm rõ và xử lý nguyên nhân gốc ở công trường freeway.</p><div class="callout">Điều tra mở rộng của Field Safety Committee</div></article>
+    <article class="panel decision pause"><div class="status">RECALL</div><div class="date">08–17/06/2026</div><h3>Triệu hồi phần mềm</h3><p>Safety Board quyết định recall; hồ sơ NHTSA ghi nhận <b style="color:var(--amber)">3.871 hệ thống ADS</b> trong phạm vi.</p><div class="callout">Quyết định 08/06 · hồ sơ 17/06</div></article>
+    <article class="panel decision go"><div class="status">GO</div><div class="date">Cuối 07/2026</div><h3>Cho chạy lại</h3><p>Waymo nối lại chuyến freeway sau các biện pháp khắc phục và cập nhật quy trình.</p><div class="callout">Go có phạm vi, không phải bảo đảm hết rủi ro</div></article>
+    <article class="panel decision pause"><div class="status">NEW EVENTS</div><div class="date">05–06/11/2026</div><h3>Sự cố tái diễn</h3><p>Ba xe vào công trường US-101; sự kiện tiếp theo liên quan xe tuần tra CHP điều tiết trên I-280.</p><div class="callout">Không ghi nhận va chạm hoặc thương tích trong các sự kiện công trường US-101 được Waymo đề cập</div></article>
+    <article class="panel decision no emphasis"><div class="status">NO-GO</div><div class="date">11–17/11/2026</div><h3>Dừng freeway không tài xế</h3><p>California DMV hạn chế từ 11/11; Waymo tạm ngừng dịch vụ freeway không tài xế ở <b style="color:#ffaba3">mọi thị trường</b> vào 17/11.</p><div class="callout" style="color:#ffaba3">Đường đô thị tiếp tục; freeway có chuyên viên vẫn được thử nghiệm</div></article>
+  </div>
+  <div class="footer"><span class="source">Nguồn: NHTSA 26E035 [S8]; The Verge 17/11/2026 [S9]; AP 17/11/2026 [S10]</span><span class="slide-number">06 / 07</span></div>
+</section>
+
+<!-- SLIDE 7 -->
+<section class="slide" id="s7" data-notes="Kết luận nhấn mạnh hai lớp chứng cứ. Điều biết chắc qua hồ sơ: hệ thống đi vào vùng công trường, hạn chế, recall, tái diễn và đình chỉ. Điều ta phân tích: chưa đủ chứng minh độ bao phủ tổ hợp edge cases. Không thể từ bên ngoài khẳng định nguyên nhân chính xác là thiếu test, simulator sai, KPI pass/fail quá thấp hay governance hỏng. Go/No-go nên theo ODD, scenario coverage, regression after fix, production monitoring và rollback. Tạm dừng freeway không phải khai tử Waymo.">
+  <div class="page-label"><span class="dot"></span>06 / Bài học quản trị Go — No-go</div>
+  <h2>Vấn đề không phải “AI có chạy được?”<br>mà là <span class="accent">“đã chứng minh đủ để Go chưa?”</span></h2>
+  <p class="lead" style="margin-top:15px">Phải tách dữ kiện trong hồ sơ an toàn khỏi giả thuyết của người phân tích.</p>
+  <div class="conclusion">
+    <div class="panel evidence"><h3 class="accent">Điều hồ sơ xác nhận</h3><ul><li><span class="bullet">✓</span><span>Waymo có dữ liệu thử nghiệm quy mô lớn và đã Go thương mại vào 11/2025.</span></li><li><span class="bullet">✓</span><span>Hệ thống vào vùng thi công do nhận diện hoặc ưu tiên nguy cơ chưa phù hợp.</span></li><li><span class="bullet">✓</span><span>Safety Board triệu hồi; sự cố tái diễn khiến phải dừng freeway không tài xế.</span></li></ul></div>
+    <div class="panel evidence hyp"><h3 class="amber">Điều cần nghiên cứu thêm</h3><ul><li><span class="bullet">?</span><span>Phải chăng bộ tình huống kiểm thử chưa bao phủ đủ tổ hợp nguy cơ?</span></li><li><span class="bullet">?</span><span>Bản sửa đã được kiểm chứng ở bao nhiêu biến thể công trường?</span></li><li><span class="bullet">?</span><span>Ngưỡng phê duyệt lại, cơ chế cảnh báo và rollback được đặt thế nào?</span></li></ul></div>
+  </div>
+  <div class="final-quote">Dữ liệu tốt trên quy mô lớn <span class="amber">≠</span> bằng chứng đầy đủ cho mọi tình huống hiếm.<br><span style="color:#9fead6">Go phải gắn với phạm vi vận hành, test coverage và điều kiện rollback.</span></div>
+  <div class="scope-note"><span><b>Phạm vi No-go:</b> dịch vụ <b>không tài xế trên cao tốc</b> — không phải toàn bộ Waymo One.</span><span class="pill">18/11/2026</span></div>
+  <div class="footer"><span class="source">Nguồn: Waymo launch [S5]; NHTSA recall [S8]; AP [S10]. Nhận định phân tích được đánh dấu riêng.</span><span class="slide-number">07 / 07</span></div>
+</section>
+</main></div>
+
+<div id="controls" aria-label="Điều khiển trình chiếu"><span class="ctrl-label">← → chuyển slide · N ghi chú · S nguồn · F toàn màn hình</span><button id="prev" title="Slide trước" aria-label="Slide trước">←</button><button id="next" title="Slide sau" aria-label="Slide sau">→</button><button id="show-sources" title="Nguồn tham khảo">S</button><button id="show-notes" title="Ghi chú thuyết minh">N</button><button id="fullscreen" title="Toàn màn hình">⛶</button></div>
+<div id="progress"><b></b></div>
+<div id="modal-back"><div id="modal"><button id="close-modal">✕</button><h2 id="modal-title"></h2><div id="modal-content"></div></div></div>
+<script>
+const sources=[
+['S1','Waymo — About / Company history','https://waymo.com/about/'],
+['S2','Waymo — 2009–2010: 1,000 autonomous-mile challenge (22/04/2020)','https://waymo.com/blog/2020/04/in-the-drivers-seat-1000-mile-challenge/'],
+['S3','Waymo — Firefly prototype and 2015 driverless ride (12/06/2017)','https://waymo.com/blog/2017/06/from-post-it-note-to-prototype-journey/'],
+['S4','Waymo — Structured testing & Castle (2020)','https://waymo.com/blog/2020/09/the-waymo-drivers-training-regime/'],
+['S5','Waymo — Taking riders further, safely with freeways (12/11/2025)','https://waymo.com/blog/2025/11/taking-riders-further-safely-with-freeways/'],
+['S6','Waymo — From surface streets to freeways (08/01/2024)','https://waymo.com/blog/2024/01/from-surface-streets-to-freeways-safely-expanding-our-rider-only-testing/'],
+['S7','Waymo — 100 million fully autonomous miles (15/07/2025)','https://waymo.com/blog/shorts/100-million-real-world-fully-autonomous-miles-driven-on-public-roads-thats/'],
+['S8','NHTSA — Part 573 Safety Recall Report 26E035 (17/06/2026)','https://static.nhtsa.gov/odi/rcl/2026/RCLRPT-26E035-7637.pdf'],
+['S9','The Verge — California restricts Waymo on freeways (17/11/2026)','https://www.theverge.com/transportation/1035789/california-dmv-bans-waymo-freeways-construction-zone-safety'],
+['S10','Associated Press — Waymo suspends driverless freeway rides (17/11/2026)','https://apnews.com/article/waymo-driverless-vehicle-california-freeway-ban-37bcd5371a4699a1850b7666b271946b'],
+['S11','Waymo — Fully autonomous ride-hailing expands to public (2020)','https://waymo.com/blog/2021/02/your-top-questions-about-autonomous-vehicles-and-the-future-answered/']
+];
+const slides=[...document.querySelectorAll('.slide')];let index=0;const stage=document.getElementById('stage');let overlay=false;
+function sizeStage(){let s=Math.min(window.innerWidth/1600,window.innerHeight/900);stage.style.transform=`scale(${s})`}
+function show(i){index=Math.max(0,Math.min(slides.length-1,i));slides.forEach((x,k)=>{x.classList.toggle('active',k===index);x.setAttribute('aria-hidden',String(k!==index))});document.querySelector('#progress b').style.width=`${100*(index+1)/slides.length}%`;document.title=`${index+1}/${slides.length} — Waymo | Go / No-go`;try{history.replaceState(null,'',location.pathname+'#'+(index+1))}catch(e){};}
+function closeModal(){document.getElementById('modal-back').classList.remove('show');overlay=false}
+function modal(title,html){document.getElementById('modal-title').textContent=title;document.getElementById('modal-content').innerHTML=html;document.getElementById('modal-back').classList.add('show');overlay=true}
+function sourcesModal(){modal('Nguồn tham khảo & chú thích',`<p style="margin-bottom:18px">Các số liệu và sự kiện trong bài dựa trên nguồn chính thức Waymo, báo cáo NHTSA và tin AP. Các ý kiến diễn giải được đánh dấu là nhận định phân tích.</p><ol>${sources.map(s=>`<li><b>${s[0]} — ${s[1]}</b><br><a target="_blank" rel="noopener" href="${s[2]}">${s[2]}</a></li>`).join('')}</ol>`)}
+function notesModal(){modal('Ghi chú thuyết minh — Slide '+(index+1),`<div id="notes"><p>${slides[index].dataset.notes.replaceAll('\n','<br>')}</p></div>`)}
+document.getElementById('prev').addEventListener('click',()=>show(index-1));document.getElementById('next').addEventListener('click',()=>show(index+1));document.getElementById('show-sources').addEventListener('click',sourcesModal);document.getElementById('show-notes').addEventListener('click',notesModal);document.getElementById('close-modal').addEventListener('click',closeModal);document.getElementById('modal-back').addEventListener('click',e=>{if(e.target.id==='modal-back')closeModal()});document.getElementById('fullscreen').addEventListener('click',()=>{if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()});
+document.addEventListener('keydown',e=>{if(overlay){if(e.key==='Escape')closeModal();return}if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(index+1)}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(index-1)}else if(e.key.toLowerCase()==='n')notesModal();else if(e.key.toLowerCase()==='s')sourcesModal();else if(e.key.toLowerCase()==='f'){if(!document.fullscreenElement)document.documentElement.requestFullscreen?.();else document.exitFullscreen?.()}else if(e.key==='Home')show(0);else if(e.key==='End')show(slides.length-1)});
+let touchX=null;document.addEventListener('touchstart',e=>{touchX=e.changedTouches[0].screenX},{passive:true});document.addEventListener('touchend',e=>{if(touchX===null)return;let dx=e.changedTouches[0].screenX-touchX;if(Math.abs(dx)>85&&!overlay)show(index+(dx<0?1:-1));touchX=null},{passive:true});
+let ctrlTimeout;document.addEventListener('mousemove',()=>{const c=document.getElementById('controls');c.classList.add('visible');clearTimeout(ctrlTimeout);ctrlTimeout=setTimeout(()=>{if(!c.matches(':hover'))c.classList.remove('visible')},2200)});window.addEventListener('resize',sizeStage);sizeStage();const hash=parseInt(location.hash.slice(1));show(Number.isFinite(hash)&&hash>=1?hash-1:0);
+</script>
+</body>
+</html>
